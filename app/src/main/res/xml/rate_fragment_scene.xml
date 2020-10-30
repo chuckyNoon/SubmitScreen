@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        android:id="@+id/collapse"
+        motion:constraintSetEnd="@layout/rate_fragment_motion_end"
+        motion:constraintSetStart="@layout/rate_fragment_motion_start">
+        <OnSwipe
+            motion:dragDirection="dragUp"
+            app:moveWhenScrollAtTop="true"
+            app:touchAnchorId="@id/recyclerView"
+          />
+        <KeyFrameSet>
+            <KeyAttribute
+                android:alpha="0"
+                android:scaleX="0.1"
+                android:scaleY="0.1"
+                motion:framePosition="80"
+                motion:motionTarget="@id/titleTextView" />
+            <KeyAttribute
+                android:alpha="0"
+                android:scaleX="0.1"
+                android:scaleY="0.1"
+                motion:framePosition="60"
+                motion:motionTarget="@id/dateTextView" />
+            <KeyAttribute
+                android:alpha="0"
+                android:scaleX="0.1"
+                android:scaleY="0.1"
+                motion:framePosition="40"
+                motion:motionTarget="@id/formatTextView" />
+            <KeyAttribute
+                android:alpha="0"
+                android:scaleX="0.1"
+                android:scaleY="0.1"
+                motion:framePosition="20"
+                motion:motionTarget="@id/headerRatingBar" />
+        </KeyFrameSet>
+    </Transition>
+
+
+</MotionScene>
