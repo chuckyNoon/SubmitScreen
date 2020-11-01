@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.motion.widget.MotionLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    app:layoutDescription="@xml/rate_fragment_scene"
+    app:showPaths="false">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -17,24 +18,41 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/headerBackground"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:background="#000000"
+    <com.github.florent37.shapeofview.shapes.RoundRectView
+        android:id="@+id/roundView"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar" />
+        app:layout_constraintTop_toTopOf="@+id/toolbar"
+
+        app:shape_roundRect_borderColor="@android:color/holo_red_dark"
+        app:shape_roundRect_bottomLeftRadius="25dp"
+        app:shape_roundRect_bottomRightRadius="25dp">
+
+
+        <ImageView
+            android:id="@+id/headerBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="matrix"
+            android:src="@drawable/fon" />
+
+    </com.github.florent37.shapeofview.shapes.RoundRectView>
+
 
     <ImageView
         android:id="@+id/headerIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/titleTextView"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="@+id/toolbar"
-        app:layout_constraintTop_toTopOf="@+id/toolbar"
-        app:srcCompat="@android:drawable/star_big_on" />
+        app:srcCompat="@drawable/header_icon" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -47,11 +65,10 @@
         android:textColor="#e0e1e2"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/headerBackground"
-        app:layout_constraintEnd_toEndOf="@+id/headerBackground"
-
-        app:layout_constraintStart_toStartOf="@+id/headerBackground"
+        app:layout_constraintBottom_toBottomOf="@+id/roundView"
+        app:layout_constraintEnd_toEndOf="@+id/roundView"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/roundView"
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <TextView
@@ -63,7 +80,6 @@
         android:textAlignment="center"
         android:textColor="#6c6f71"
         android:textSize="16sp"
-        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@+id/titleTextView"
         app:layout_constraintStart_toStartOf="@+id/titleTextView"
         app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
@@ -77,31 +93,35 @@
         android:textAlignment="center"
         android:textColor="#6c6f71"
         android:textSize="16sp"
-        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@+id/dateTextView"
         app:layout_constraintStart_toStartOf="@+id/dateTextView"
         app:layout_constraintTop_toBottomOf="@+id/dateTextView" />
 
     <RatingBar
         android:id="@+id/headerRatingBar"
+        style="@style/RatingBarForHeader"
         android:layout_width="235dp"
         android:layout_height="wrap_content"
+        android:isIndicator="true"
         android:max="5"
         android:progress="4"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/headerBackground"
+
+        app:layout_constraintBottom_toBottomOf="@+id/roundView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-
     <androidx.recyclerview.widget.RecyclerView
+
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/roundView"
+
+        app:layout_constraintVertical_bias="0.0" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.motion.widget.MotionLayout>

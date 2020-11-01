@@ -23,13 +23,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    kotlinOptions { jvmTarget = "1.8" }
 }
 
 
 dependencies {
-    compile 'android.arch.lifecycle:runtime:1.0.0-alpha1'
-    compile 'android.arch.lifecycle:extensions:1.0.0-alpha1'
-    annotationProcessor "android.arch.lifecycle:compiler:1.0.0-alpha1"
+    implementation 'com.github.florent37:shapeofview:1.4.4'
+    implementation "androidx.fragment:fragment-ktx:1.2.4"
 
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta3'
     implementation 'com.android.support.constraint:constraint-layout:2.0.3'

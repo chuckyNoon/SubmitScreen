@@ -1,125 +1,213 @@
 package com.example.rateactivity
 
-import android.graphics.Bitmap
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RatingBar
-import android.widget.TextView
+import android.widget.*
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_estimation.view.*
-import kotlinx.android.synthetic.main.item_estimation_with_box.view.*
+import kotlinx.android.synthetic.main.item_survey_with_person_icons.view.*
+import kotlinx.android.synthetic.main.item_survey_with_alternative_option.view.*
 import kotlinx.android.synthetic.main.item_feedback.view.*
 import kotlinx.android.synthetic.main.item_submit.view.*
 
-
-sealed class MyCell {
-    data class Estimation(var questionText: String, var img: Bitmap?, var estimationNum: Int) :
-        MyCell()
-
-    data class EstimationWithBox(
-        var questionText: String,
-        var img: Bitmap?,
-        var estimationNum: Int,
-        var boxText: String,
-    ) : MyCell()
-
-    data class Feedback(var titleText: String) : MyCell()
-    data class Submit(var buttonText: String) : MyCell()
-}
-
 class ItemsAdapter(
     private val layoutInflater: LayoutInflater,
-    private val items: ArrayList<MyCell>,
-    private val estimateActionListener: EstimateActionListener
+    private val surveyWithStarIconsInteraction: SurveyWithStarIconsInteraction,
+    private val surveyWithPersonIconsInteraction: SurveyWithPersonIconsInteraction,
+    private val surveyWithOptionInteraction: SurveyWithOptionInteraction,
+    private val feedbackInteraction: FeedbackInteraction,
+    private val submitInteraction: SubmitInteraction
 ) : RecyclerView.Adapter<ItemsAdapter.RowHolder>() {
 
     private enum class ViewType {
-        Estimation,
-        EstimationWithBox,
+        SurveyWithPersonIcons,
+        SurveyWithStarIcons,
+        SurveyWithOption,
         Feedback,
         Submit
     }
 
-    private val MyCell.viewType: ViewType
+    private val SubmitListCell.viewType: ViewType
         get() = when (this) {
-            is MyCell.Estimation -> ViewType.Estimation
-            is MyCell.EstimationWithBox -> ViewType.EstimationWithBox
-            is MyCell.Feedback -> ViewType.Feedback
-            is MyCell.Submit -> ViewType.Submit
+            is SubmitListCell.SurveyWithPersonIcons -> ViewType.SurveyWithPersonIcons
+            is SubmitListCell.SurveyWithStarIcons -> ViewType.SurveyWithStarIcons
+            is SubmitListCell.SurveyWithOption -> ViewType.SurveyWithOption
+            is SubmitListCell.Feedback -> ViewType.Feedback
+            is SubmitListCell.Submit -> ViewType.Submit
         }
 
     private val viewTypeValues = ViewType.values()
 
+    private val diffUtilCallback = object : DiffUtil.ItemCallback<SubmitListCell>() {
+        override fun areItemsTheSame(oldItem: SubmitListCell, newItem: SubmitListCell) =
+            oldItem.isSame(newItem)
+
+        override fun areContentsTheSame(oldItem: SubmitListCell, newItem: SubmitListCell) =
+            oldItem.areContentsSame(newItem)
+
+        override fun getChangePayload(oldItem: SubmitListCell, newItem: SubmitListCell): Any? {
+            return newItem
+        }
+    }
+
+    private val differ = AsyncListDiffer(this, diffUtilCallback)
+
+    fun submitCells(cells: List<SubmitListCell>) {
+        differ.submitList(cells)
+    }
+
+    override fun onBindViewHolder(holder: RowHolder, position: Int, payloads: MutableList<Any>) {
+        super.onBindViewHolder(holder, position, payloads)
+
+        if (payloads.size < 1)
+            return
+        when (val newData = payloads[0]) {
+            is SubmitListCell.SurveyWithStarIcons -> holder.bind(newData)
+            is SubmitListCell.SurveyWithOption -> holder.bind(newData)
+            is SubmitListCell.Feedback -> holder.bind(newData)
+            is SubmitListCell.Submit -> holder.bind(newData)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RowHolder, position: Int) {
+        holder.bind(differ.currentList[position])
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewTypeOrdinal: Int): RowHolder =
         when (viewTypeValues[viewTypeOrdinal]) {
-            ViewType.Estimation -> EstimationHolder(layoutInflater, parent, estimateActionListener)
-            ViewType.EstimationWithBox -> EstimationWithBoxHolder(layoutInflater, parent)
-            ViewType.Feedback -> FeedbackHolder(layoutInflater, parent)
-            ViewType.Submit -> SubmitHolder(layoutInflater, parent)
+            ViewType.SurveyWithStarIcons -> SurveyWithStarIconsHolder(
+                layoutInflater,
+                parent,
+                surveyWithStarIconsInteraction
+            )
+            ViewType.SurveyWithPersonIcons -> SurveyWithPersonIconsHolder(
+                layoutInflater,
+                parent,
+                surveyWithPersonIconsInteraction
+            )
+            ViewType.SurveyWithOption -> SurveyWithOptionHolder(
+                layoutInflater,
+                parent,
+                surveyWithOptionInteraction
+            )
+            ViewType.Feedback -> FeedbackHolder(layoutInflater, parent, feedbackInteraction)
+            ViewType.Submit -> SubmitHolder(layoutInflater, parent, submitInteraction)
         }
 
-    override fun onBindViewHolder(holder: RowHolder, position: Int): Unit {
-        holder.bind(items[position])
-    }
+    override fun getItemViewType(position: Int): Int = differ.currentList[position].viewType.ordinal
 
-    override fun getItemViewType(position: Int): Int = items[position].viewType.ordinal
-
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = differ.currentList.size
 
     abstract class RowHolder(v: View) : RecyclerView.ViewHolder(v) {
-        abstract fun bind(cell: MyCell)
+        abstract fun bind(cell: SubmitListCell)
     }
 
-    class EstimationHolder(private val v: View) :
+    class SurveyWithStarIconsHolder(private val v: View) :
         RowHolder(v) {
 
         private var questionTextView: TextView = v.questionTextView
         private var ratingBar: RatingBar = v.ratingBar
-        private var estimateActionListener: EstimateActionListener? = null
+        private var interaction: SurveyWithStarIconsInteraction? = null
 
         constructor(
             layoutInflater: LayoutInflater,
             parent: ViewGroup,
-            listener: ViewTypeActionListener
-        ) : this(layoutInflater.inflate(R.layout.item_estimation, parent, false)) {
-            if (listener is EstimateActionListener) {
-                estimateActionListener = listener
+            interaction: Interaction
+        ) : this(layoutInflater.inflate(R.layout.item_survey_with_star_icons, parent, false)) {
+            if (interaction is SurveyWithStarIconsInteraction) {
+                this.interaction = interaction
             }
         }
 
-        override fun bind(cell: MyCell) {
-            if (cell is MyCell.Estimation) {
-                questionTextView.text = cell.questionText
+        override fun bind(cell: SubmitListCell) {
+            if (cell is SubmitListCell.SurveyWithStarIcons) {
+                questionTextView.text = cell.question
                 ratingBar.numStars = 5
-                ratingBar.rating = cell.estimationNum.toFloat()
+                ratingBar.rating = cell.estimation.toFloat()
                 ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
-                    estimateActionListener?.onRatingChanged(rating.toInt(), adapterPosition)
+                    interaction?.onRatingChanged(rating.toInt(), adapterPosition)
                 }
             }
         }
     }
 
-    class EstimationWithBoxHolder(private val v: View) :
+    class SurveyWithPersonIconsHolder(private val v: View) :
         RowHolder(v) {
 
+        private var questionTextView: TextView = v.questionTextView
+        private var ratingBar: RatingBar = v.ratingBar
+        private var interaction: SurveyWithPersonIconsInteraction? = null
+
+        constructor(
+            layoutInflater: LayoutInflater,
+            parent: ViewGroup,
+            interaction: Interaction
+        ) : this(layoutInflater.inflate(R.layout.item_survey_with_person_icons, parent, false)) {
+            if (interaction is SurveyWithPersonIconsInteraction) {
+                this.interaction = interaction
+            }
+        }
+
+        override fun bind(cell: SubmitListCell) {
+            if (cell is SubmitListCell.SurveyWithPersonIcons) {
+                questionTextView.text = cell.question
+                ratingBar.numStars = 5
+                ratingBar.rating = cell.estimation.toFloat()
+                ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
+                    interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+                }
+            }
+        }
+    }
+
+    class SurveyWithOptionHolder(private val v: View) :
+        RowHolder(v) {
+
+        private var interaction: SurveyWithOptionInteraction? = null
         private var questionTextView: TextView = v.questionTextView2
         private var ratingBar: RatingBar = v.ratingBar2
         private var radioButton: RadioButton = v.radioButton
 
         constructor(
             layoutInflater: LayoutInflater,
-            parent: ViewGroup
-        ) : this(layoutInflater.inflate(R.layout.item_estimation_with_box, parent, false))
+            parent: ViewGroup,
+            interaction: Interaction
+        ) : this(
+            layoutInflater.inflate(
+                R.layout.item_survey_with_alternative_option,
+                parent,
+                false
+            )
+        ) {
+            if (interaction is SurveyWithOptionInteraction) {
+                this.interaction = interaction
+            }
+        }
 
-        override fun bind(cell: MyCell) {
-            if (cell is MyCell.EstimationWithBox) {
-                questionTextView.text = cell.questionText
+        override fun bind(cell: SubmitListCell) {
+            if (cell is SubmitListCell.SurveyWithOption) {
+                questionTextView.text = cell.question
                 ratingBar.numStars = 5
-                ratingBar.rating = cell.estimationNum.toFloat()
-                radioButton.text = cell.boxText
+                if (cell.altOptionSelected) {
+                    ratingBar.rating = 0f
+                    ratingBar.setIsIndicator(true)
+                    radioButton.isChecked = true
+                } else {
+                    ratingBar.rating = cell.estimation.toFloat()
+                    ratingBar.setIsIndicator(false)
+                    radioButton.isChecked = false
+                }
+                radioButton.text = cell.altOptionText
+                ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
+                    interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+                }
+                radioButton.setOnClickListener {
+                    interaction?.onAltOptionClicked(adapterPosition)
+                }
             }
         }
     }
@@ -127,17 +215,41 @@ class ItemsAdapter(
     class FeedbackHolder(private val v: View) :
         RowHolder(v) {
 
-        private var feedbackTitleTextView = v.feedbackTitleTextView
-        private var feedbackEditText = v.feedbackEditText
+        private var interaction: FeedbackInteraction? = null
+        private var feedbackTitleTextView: TextView = v.feedbackTitleTextView
+        private var feedbackEditText: EditText = v.feedbackEditText
 
         constructor(
             layoutInflater: LayoutInflater,
-            parent: ViewGroup
-        ) : this(layoutInflater.inflate(R.layout.item_feedback, parent, false))
+            parent: ViewGroup,
+            interaction: Interaction
+        ) : this(layoutInflater.inflate(R.layout.item_feedback, parent, false)) {
+            if (interaction is FeedbackInteraction) {
+                this.interaction = interaction
+            }
+        }
 
-        override fun bind(cell: MyCell) {
-            if (cell is MyCell.Feedback) {
+        override fun bind(cell: SubmitListCell) {
+            if (cell is SubmitListCell.Feedback) {
                 feedbackTitleTextView.text = cell.titleText
+                feedbackEditText.setText(cell.feedbackText)
+                feedbackEditText.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable) {
+                        interaction?.onTextChanged(s.toString(), adapterPosition)
+                    }
+
+                    override fun beforeTextChanged(
+                        s: CharSequence, start: Int,
+                        count: Int, after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence, start: Int,
+                        before: Int, count: Int
+                    ) {
+                    }
+                })
             }
         }
     }
@@ -145,23 +257,49 @@ class ItemsAdapter(
     class SubmitHolder(private val v: View) :
         RowHolder(v) {
 
+        private var interaction: SubmitInteraction? = null
         private val submitButton: Button = v.submitButton
 
         constructor(
             layoutInflater: LayoutInflater,
-            parent: ViewGroup
-        ) : this(layoutInflater.inflate(R.layout.item_submit, parent, false))
+            parent: ViewGroup,
+            listener: Interaction
+        ) : this(layoutInflater.inflate(R.layout.item_submit, parent, false)) {
+            if (listener is SubmitInteraction) {
+                interaction = listener
+            }
+        }
 
-        override fun bind(cell: MyCell) {
-            if (cell is MyCell.Submit) {
+        override fun bind(cell: SubmitListCell) {
+            if (cell is SubmitListCell.Submit) {
                 submitButton.text = cell.buttonText
+                submitButton.setOnClickListener {
+                    interaction?.onSubmitButtonClicked()
+                }
             }
         }
     }
 
-    interface ViewTypeActionListener
+    interface Interaction
 
-    interface EstimateActionListener : ViewTypeActionListener {
-        fun onRatingChanged(progress: Int, position: Int)
+    interface SurveyWithStarIconsInteraction : Interaction {
+        fun onRatingChanged(rating: Int, position: Int)
+    }
+
+    interface SurveyWithPersonIconsInteraction : Interaction {
+        fun onRatingChanged(rating: Int, position: Int)
+    }
+
+    interface SurveyWithOptionInteraction : Interaction {
+        fun onRatingChanged(rating: Int, position: Int)
+        fun onAltOptionClicked(position: Int)
+    }
+
+    interface FeedbackInteraction : Interaction {
+        fun onTextChanged(text: String, position: Int)
+    }
+
+    interface SubmitInteraction : Interaction {
+        fun onSubmitButtonClicked()
     }
 }

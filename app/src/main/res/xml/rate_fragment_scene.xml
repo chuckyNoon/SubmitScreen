@@ -5,8 +5,8 @@
 
     <Transition
         android:id="@+id/collapse"
-        motion:constraintSetEnd="@layout/rate_fragment_motion_end"
-        motion:constraintSetStart="@layout/rate_fragment_motion_start">
+        motion:constraintSetEnd="@layout/submit_fragment_motion_end"
+        motion:constraintSetStart="@layout/submit_fragment_motion_start">
         <OnSwipe
             motion:dragDirection="dragUp"
             app:moveWhenScrollAtTop="true"
