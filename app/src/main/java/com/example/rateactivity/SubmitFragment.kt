@@ -1,15 +1,20 @@
 package com.example.rateactivity
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
 
 class SubmitFragment : Fragment() {
 
@@ -33,6 +38,10 @@ class SubmitFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        /*requireActivity().window.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+        )*/
 
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         val layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -89,14 +98,39 @@ class SubmitFragment : Fragment() {
 
     private val feedbackInteraction = object : ItemsAdapter.FeedbackInteraction {
         override fun onTextChanged(text: String, position: Int) {
-            viewModel?.onFeedbackTextChanged(text, position)
+             viewModel?.onFeedbackTextChanged(text, position)
         }
     }
 
     private val submitInteraction = object : ItemsAdapter.SubmitInteraction {
         override fun onSubmitButtonClicked() {
-            Toast.makeText(requireContext(), "${"123".toString()}", Toast.LENGTH_LONG).show()
+            viewModel?.let {
+               /* val progressBar = view!!.findViewById<ProgressBar>(R.id.progressBar)
+                progressBar.visibility = View.VISIBLE
+                Handler().postDelayed({
+                    progressBar.visibility = View.INVISIBLE
+                    val submitState = it.getSubmitState()
+                    val reportText = makeReport(submitState)
+                    Toast.makeText(requireContext(), reportText, Toast.LENGTH_LONG).show()
+                }, 1500)*/
+            }
         }
+    }
+
+    private fun makeReport(submitState: SubmitState): String {
+        return StringBuilder().apply {
+            append(makeReportLine("text", submitState.text))
+            append(makeReportLine("food", submitState.food.toString()))
+            append(makeReportLine("flight", submitState.flight.toString()))
+            append(makeReportLine("crew", submitState.crew.toString()))
+            append(makeReportLine("aircraft", submitState.aircraft.toString()))
+            append(makeReportLine("seat", submitState.seat.toString()))
+            append(makeReportLine("people", submitState.people.toString()))
+        }.toString()
+    }
+
+    private fun makeReportLine(fieldName: String, value: String): String {
+        return ("$fieldName = $value\n")
     }
 
 }

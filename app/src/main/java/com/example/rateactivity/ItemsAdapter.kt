@@ -2,9 +2,11 @@ package com.example.rateactivity
 
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -233,23 +235,11 @@ class ItemsAdapter(
             if (cell is SubmitListCell.Feedback) {
                 feedbackTitleTextView.text = cell.titleText
                 feedbackEditText.setText(cell.feedbackText)
-                feedbackEditText.addTextChangedListener(object : TextWatcher {
-                    override fun afterTextChanged(s: Editable) {
-                        interaction?.onTextChanged(s.toString(), adapterPosition)
+                feedbackEditText.setOnFocusChangeListener { v, hasFocus ->
+                    if (!hasFocus && v is EditText) {
+                        interaction?.onTextChanged(v.text.toString(), adapterPosition)
                     }
-
-                    override fun beforeTextChanged(
-                        s: CharSequence, start: Int,
-                        count: Int, after: Int
-                    ) {
-                    }
-
-                    override fun onTextChanged(
-                        s: CharSequence, start: Int,
-                        before: Int, count: Int
-                    ) {
-                    }
-                })
+                }
             }
         }
     }

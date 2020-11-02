@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.motion.widget.MotionLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layoutDescription="@xml/rate_fragment_scene"
+    app:layoutDescription="@xml/submit_fragment_scene"
     app:showPaths="false">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
@@ -26,9 +24,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar"
+        app:layout_constraintTop_toTopOf="parent"
 
-        app:shape_roundRect_borderColor="@android:color/holo_red_dark"
         app:shape_roundRect_bottomLeftRadius="25dp"
         app:shape_roundRect_bottomRightRadius="25dp">
 
@@ -37,6 +34,7 @@
             android:id="@+id/headerBackground"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:adjustViewBounds="false"
             android:scaleType="matrix"
             android:src="@drawable/fon" />
 
@@ -120,7 +118,6 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/roundView"
-
         app:layout_constraintVertical_bias="0.0" />
 
 

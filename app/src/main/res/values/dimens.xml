@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="headerStartSize">400dp</dimen>
+    <dimen name="headerEndSize">50dp</dimen>
+    <dimen name="toolBarSize">50dp</dimen>
+    <dimen name="headerIconHeight">40dp</dimen>
+    <dimen name="headerIconWidth">40dp</dimen>
+</resources>

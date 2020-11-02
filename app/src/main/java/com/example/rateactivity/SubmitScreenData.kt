@@ -9,12 +9,13 @@ object SubmitScreenData {
         Crew,
         Aircraft,
         Seat,
-        Submit
+        Submit,
+        People
     }
 
     fun getStates(): ArrayList<ItemState> {
         val states = ArrayList<ItemState>()
-        states.add(ItemState.SurveyWithPersonIcons("How crowded was the flight?", 0, ItemId.Flight))
+        states.add(ItemState.SurveyWithPersonIcons("How crowded was the flight?", 0, ItemId.People))
         states.add(
             ItemState.SurveyWithStarIcons(
                 "How do you rate the aircraft?",

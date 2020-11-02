@@ -10,7 +10,6 @@
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
@@ -31,10 +30,10 @@
 
         <ImageView
             android:id="@+id/headerBackground"
-            android:src = "@drawable/fon"
-            android:scaleType="matrix"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:scaleType="matrix"
+            android:src="@drawable/fon"
 
             />
 

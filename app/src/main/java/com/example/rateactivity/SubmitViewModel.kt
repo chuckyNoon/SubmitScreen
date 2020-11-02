@@ -5,26 +5,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class SubmitViewModel : ViewModel() {
-    private var states = ArrayList<ItemState>()
+    private var cellStates = ArrayList<ItemState>()
 
     private val _cells = MutableLiveData<ArrayList<SubmitListCell>>()
     val cells: LiveData<ArrayList<SubmitListCell>> = _cells
 
     init {
-        states = SubmitScreenData.getStates()
+        cellStates = SubmitScreenData.getStates()
         fitCellsToStates()
     }
 
-    private fun fitCellsToStates() {
-        val newCells = ArrayList<SubmitListCell>()
-        for (state in states) {
-            newCells.add(state.toCell())
-        }
-        _cells.value = newCells
-    }
-
     fun onEstimateChanged(rating: Int, position: Int) {
-        when (val state = states[position]) {
+        when (val state = cellStates[position]) {
             is ItemState.SurveyWithStarIcons -> state.rating = rating
             is ItemState.SurveyWithPersonIcons -> state.rating = rating
             is ItemState.SurveyWithOption -> state.rating = rating
@@ -34,7 +26,7 @@ class SubmitViewModel : ViewModel() {
     }
 
     fun onAltOptionButtonClicked(position: Int) {
-        val state = states[position]
+        val state = cellStates[position]
         if (state is ItemState.SurveyWithOption) {
             state.altOptionSelected = !state.altOptionSelected
             fitCellsToStates()
@@ -42,12 +34,90 @@ class SubmitViewModel : ViewModel() {
     }
 
     fun onFeedbackTextChanged(text: String, position: Int) {
-        if (states[position] is ItemState.Feedback) {
-            val state = states[position] as ItemState.Feedback
+        if (cellStates[position] is ItemState.Feedback) {
+            val state = cellStates[position] as ItemState.Feedback
             state.feedbackText = text
             fitCellsToStates()
         }
     }
+
+    private fun fitCellsToStates() {
+        val newCells = ArrayList<SubmitListCell>()
+        for (state in cellStates) {
+            newCells.add(state.toCell())
+        }
+        _cells.value = newCells
+    }
+
+    fun getSubmitState(): SubmitState {
+        val submitState = SubmitState()
+        for (cellState in cellStates) {
+            when (cellState) {
+                is ItemState.SurveyWithStarIcons -> fillSubmitWithDataFromSurveyWithStarIcons(
+                    submitState,
+                    cellState
+                )
+                is ItemState.SurveyWithPersonIcons -> fillSubmitWithDataFromSurveyWithPersonIcons(
+                    submitState,
+                    cellState
+                )
+                is ItemState.SurveyWithOption -> fillSubmitWithDataFromSurveyWithOption(
+                    submitState,
+                    cellState
+                )
+                is ItemState.Feedback -> fillSubmitWithDataFromFeedback(
+                    submitState,
+                    cellState
+                )
+            }
+        }
+        return submitState
+    }
+
+    private fun fillSubmitWithDataFromSurveyWithStarIcons(
+        submitState: SubmitState,
+        state: ItemState.SurveyWithStarIcons
+    ) {
+        when (state.id) {
+            SubmitScreenData.ItemId.Aircraft -> submitState.aircraft = state.rating + 1
+            SubmitScreenData.ItemId.Crew -> submitState.crew = state.rating + 1
+            SubmitScreenData.ItemId.Seat -> submitState.seat = state.rating + 1
+        }
+    }
+
+    private fun fillSubmitWithDataFromSurveyWithPersonIcons(
+        submitState: SubmitState,
+        state: ItemState.SurveyWithPersonIcons
+    ) {
+        when (state.id) {
+            SubmitScreenData.ItemId.People -> submitState.people = state.rating + 1
+        }
+    }
+
+    private fun fillSubmitWithDataFromSurveyWithOption(
+        submitState: SubmitState,
+        state: ItemState.SurveyWithOption
+    ) {
+        when (state.id) {
+            SubmitScreenData.ItemId.Food -> {
+                if (state.altOptionSelected) {
+                    submitState.food = 0
+                } else {
+                    submitState.food = state.rating + 1
+                }
+            }
+        }
+    }
+
+    private fun fillSubmitWithDataFromFeedback(
+        submitState: SubmitState,
+        state: ItemState.Feedback
+    ) {
+        when (state.id) {
+            SubmitScreenData.ItemId.Feedback -> submitState.text = state.feedbackText
+        }
+    }
+
 }
 
 data class SubmitState(
