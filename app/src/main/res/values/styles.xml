@@ -8,7 +8,6 @@
 
     </style>
 
-
     <style name="RatingBarWithPeople" parent="@android:style/Widget.RatingBar">
         <item name="android:progressDrawable">@drawable/rating_bar_with_people</item>
     </style>

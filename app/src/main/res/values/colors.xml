@@ -8,5 +8,11 @@
     <color name="colorGrey">#bfc1c7</color>
     <color name="colorDarkGrey">#4f5153</color>
 
-    <color name="optionButtonColor">#1182ff</color>
+    <color name="submit_button_background">#323c46</color>
+    <color name="option_button_border">#1182ff</color>
+
+    <color name="alt_option_button_text">#9c9fa8</color>
+    <color name="header_title_text">#e0e1e2</color>
+    <color name="header_description_text">#8f9296</color>
+    <color name="submit_list_text">#000000</color>
 </resources>

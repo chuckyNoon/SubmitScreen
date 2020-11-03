@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">RateActivity</string>
+
+    <string name="header_title">How do you rate the overall flight experience?</string>
+    <string name="header_second_line">LH 3495 -> 26 Mar 2019</string>
+    <string name="header_third_line">SFO -> CDG</string>
+
+    <string name="people_question">How crowded was the flight?</string>
+    <string name="aircraft_question">How do you rate the aircraft?</string>
+    <string name="seats_question">How do you rate the seats?</string>
+    <string name="crew_question">How do you rate the crew</string>
+    <string name="food_question">How do you rate the food</string>
+    <string name="no_food_answer">There were no food</string>
+    <string name="feedback_title">Leave any feedback</string>
+    <string name="feedback_tint">Share your experience. How was the seat? How was the food? Any tips?</string>
+    <string name="submit_button_text">Submit</string>
+
 </resources>

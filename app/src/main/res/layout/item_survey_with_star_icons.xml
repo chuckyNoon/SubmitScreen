@@ -10,10 +10,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
-        android:text="How crowded was the fight?"
-        android:textColor="#000000"
+        android:text="@string/aircraft_question"
+        android:textColor="@android:color/black"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,8 +20,8 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <RatingBar
-        style="@style/RatingBarWithStars"
         android:id="@+id/ratingBar"
+        style="@style/RatingBarWithStars"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"

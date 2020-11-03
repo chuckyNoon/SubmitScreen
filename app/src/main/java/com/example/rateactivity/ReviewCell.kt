@@ -1,28 +1,28 @@
 package com.example.rateactivity
 
-sealed class SubmitListCell {
+sealed class ReviewCell {
 
-    abstract fun isSame(other: SubmitListCell): Boolean
-    abstract fun areContentsSame(other: SubmitListCell): Boolean
+    abstract fun isSame(other: ReviewCell): Boolean
+    abstract fun areContentsSame(other: ReviewCell): Boolean
 
     data class SurveyWithStarIcons(
         val question: String,
-        val estimation: Int,
-        val id: SubmitScreenData.ItemId
-    ) : SubmitListCell() {
+        val rating: Int,
+        val id: ReviewListBuilder.CellId
+    ) : ReviewCell() {
 
-        override fun isSame(other: SubmitListCell): Boolean {
+        override fun isSame(other: ReviewCell): Boolean {
             return when (other) {
                 !is SurveyWithStarIcons -> false
                 else -> this.id == other.id
             }
         }
 
-        override fun areContentsSame(other: SubmitListCell): Boolean {
+        override fun areContentsSame(other: ReviewCell): Boolean {
             return when {
                 other !is SurveyWithStarIcons -> false
                 question != other.question -> false
-                estimation != other.estimation -> false
+                rating != other.rating -> false
                 else -> true
             }
         }
@@ -30,49 +30,49 @@ sealed class SubmitListCell {
 
     data class SurveyWithPersonIcons(
         val question: String,
-        val estimation: Int,
-        val id: SubmitScreenData.ItemId
-    ) : SubmitListCell() {
+        val rating: Int,
+        val id: ReviewListBuilder.CellId
+    ) : ReviewCell() {
 
-        override fun isSame(other: SubmitListCell): Boolean {
+        override fun isSame(other: ReviewCell): Boolean {
             return when (other) {
                 !is SurveyWithPersonIcons -> false
                 else -> this.id == other.id
             }
         }
 
-        override fun areContentsSame(other: SubmitListCell): Boolean {
+        override fun areContentsSame(other: ReviewCell): Boolean {
             return when {
                 other !is SurveyWithPersonIcons -> false
                 question != other.question -> false
-                estimation != other.estimation -> false
+                rating != other.rating -> false
                 else -> true
             }
         }
     }
 
-    data class SurveyWithOption(
+    data class SurveyWithAltOption(
         val question: String,
-        val estimation: Int,
+        val rating: Int,
         val altOptionText: String,
         val altOptionSelected: Boolean,
-        val id: SubmitScreenData.ItemId
-    ) : SubmitListCell() {
+        val id: ReviewListBuilder.CellId
+    ) : ReviewCell() {
 
-        override fun isSame(other: SubmitListCell): Boolean {
+        override fun isSame(other: ReviewCell): Boolean {
             return when (other) {
-                !is SurveyWithOption -> false
+                !is SurveyWithAltOption -> false
                 else -> this.id == other.id
             }
         }
 
-        override fun areContentsSame(other: SubmitListCell): Boolean {
+        override fun areContentsSame(other: ReviewCell): Boolean {
             return when {
-                other !is SurveyWithOption -> false
+                other !is SurveyWithAltOption -> false
                 this.altOptionSelected != other.altOptionSelected -> false
                 this.altOptionText != other.altOptionText -> false
                 this.question != other.question -> false
-                else -> this.estimation == other.estimation
+                else -> this.rating == other.rating
             }
         }
     }
@@ -80,17 +80,17 @@ sealed class SubmitListCell {
     data class Feedback(
         val titleText: String,
         val feedbackText: String,
-        val id: SubmitScreenData.ItemId
-    ) : SubmitListCell() {
+        val id: ReviewListBuilder.CellId
+    ) : ReviewCell() {
 
-        override fun isSame(other: SubmitListCell): Boolean {
+        override fun isSame(other: ReviewCell): Boolean {
             return when (other) {
                 !is Feedback -> false
                 else -> this.id == other.id
             }
         }
 
-        override fun areContentsSame(other: SubmitListCell): Boolean {
+        override fun areContentsSame(other: ReviewCell): Boolean {
             return when {
                 other !is Feedback -> false
                 this.feedbackText != other.feedbackText -> false
@@ -101,16 +101,16 @@ sealed class SubmitListCell {
 
     data class Submit(
         val buttonText: String,
-        val id: SubmitScreenData.ItemId
-    ) : SubmitListCell() {
-        override fun isSame(other: SubmitListCell): Boolean {
+        val id: ReviewListBuilder.CellId
+    ) : ReviewCell() {
+        override fun isSame(other: ReviewCell): Boolean {
             return when (other) {
                 !is Submit -> false
                 else -> this.id == other.id
             }
         }
 
-        override fun areContentsSame(other: SubmitListCell): Boolean {
+        override fun areContentsSame(other: ReviewCell): Boolean {
             return when (other) {
                 !is Submit -> false
                 else -> this.buttonText == other.buttonText

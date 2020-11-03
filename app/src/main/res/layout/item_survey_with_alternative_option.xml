@@ -6,14 +6,13 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/questionTextView2"
+        android:id="@+id/questionTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
-        android:text="How crowded was the fight?"
-        android:textColor="#000000"
+        android:text="@string/food_question"
+        android:textColor="@android:color/black"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <RatingBar
-        android:id="@+id/ratingBar2"
+        android:id="@+id/ratingBar"
         style="@style/RatingBarWithStars"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,22 +29,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/questionTextView2" />
+        app:layout_constraintTop_toBottomOf="@+id/questionTextView" />
 
     <RadioButton
         android:id="@+id/radioButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:buttonTint="@color/optionButtonColor"
+        android:buttonTint="@color/option_button_border"
         android:checked="false"
-        android:text="There were no food"
-        android:textColor="#9c9fa8"
+        android:text="@string/no_food_answer"
+        android:textColor="@color/alt_option_button_text"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/ratingBar2"
-        app:layout_constraintTop_toBottomOf="@+id/ratingBar2" />
+        app:layout_constraintStart_toStartOf="@+id/ratingBar"
+        app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
