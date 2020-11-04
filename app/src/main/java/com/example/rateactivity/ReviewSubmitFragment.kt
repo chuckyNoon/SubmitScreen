@@ -3,23 +3,28 @@ package com.example.rateactivity
 import android.graphics.drawable.TransitionDrawable
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.RatingBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.lang.IllegalStateException
 
 
 class ReviewSubmitFragment : Fragment() {
 
     companion object {
         fun newInstance() = ReviewSubmitFragment()
+
+        const val ERROR_TAG = "error"
     }
 
     private lateinit var viewModel: ReviewSubmitViewModel
@@ -27,16 +32,26 @@ class ReviewSubmitFragment : Fragment() {
     private var toolbar: androidx.appcompat.widget.Toolbar? = null
     private var recyclerView: RecyclerView? = null
     private var progressBar: ProgressBar? = null
+    private var headerTitleView: TextView? = null
+    private var headerSecondLineView: TextView? = null
+    private var headerThirdLineView: TextView? = null
+    private var headerRatingBar: RatingBar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel =
-            ViewModelProvider(
-                requireActivity(),
-                ReviewSubmitViewModelFactory(requireActivity().application)
-            ).get(
+
+        try {
+            val notNullActivity = requireActivity()
+            val viewModelFactory = ReviewSubmitViewModelFactory(
+                HeaderStateSource(notNullActivity.application),
+                CellStatesSource(notNullActivity.application)
+            )
+            viewModel = ViewModelProvider(notNullActivity, viewModelFactory).get(
                 ReviewSubmitViewModel::class.java
             )
+        } catch (ex: IllegalStateException) {
+            Log.e(ERROR_TAG, ex.toString())
+        }
     }
 
     override fun onCreateView(
@@ -51,6 +66,7 @@ class ReviewSubmitFragment : Fragment() {
 
         initFields(view)
         setupToolBar()
+        setupHeader()
         setupRecyclerView()
     }
 
@@ -58,6 +74,10 @@ class ReviewSubmitFragment : Fragment() {
         toolbar = v.findViewById(R.id.toolbar)
         recyclerView = v.findViewById(R.id.recyclerView)
         progressBar = v.findViewById(R.id.progressBar)
+        headerTitleView = v.findViewById(R.id.headerTitleTextView)
+        headerSecondLineView = v.findViewById(R.id.headerSecondLineTextView)
+        headerThirdLineView = v.findViewById(R.id.headerThirdLineTextView)
+        headerRatingBar = v.findViewById(R.id.headerRatingBar)
     }
 
     private fun setupToolBar() {
@@ -66,14 +86,27 @@ class ReviewSubmitFragment : Fragment() {
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
     }
 
+    private fun setupHeader() {
+        viewModel.headerViewState.observe(viewLifecycleOwner, { headerViewState ->
+            headerTitleView?.text = headerViewState.title
+            headerSecondLineView?.text = headerViewState.secondLine
+            headerThirdLineView?.text = headerViewState.thirdLine
+            headerRatingBar?.rating = headerViewState.rating.toFloat()
+        })
+
+        headerRatingBar?.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
+            viewModel.onHeaderRatingChanged(rating.toInt())
+        }
+    }
+
     private fun setupRecyclerView() {
-        recyclerView?.let{recyclerView->
+        recyclerView?.let { recyclerView ->
             val layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             recyclerView.layoutManager = layoutManager
 
-            viewModel.cells.observe(viewLifecycleOwner, Observer<List<ReviewCell>>() { cells ->
+            viewModel.cells.observe(viewLifecycleOwner, { cells ->
                 if (cells == null) {
-                    return@Observer;
+                    return@observe
                 }
                 val adapter = recyclerView.adapter
                 if (adapter == null) {
@@ -99,21 +132,21 @@ class ReviewSubmitFragment : Fragment() {
     private val surveyWithStarIconsInteraction =
         object : ReviewCellsAdapter.SurveyWithStarIconsInteraction {
             override fun onRatingChanged(rating: Int, position: Int) {
-               viewModel.onRatingChanged(rating, position)
+                viewModel.onCellRatingChanged(rating, position)
             }
         }
 
     private val surveyWithPersonIconsInteraction =
         object : ReviewCellsAdapter.SurveyWithPersonIconsInteraction {
             override fun onRatingChanged(rating: Int, position: Int) {
-                viewModel.onRatingChanged(rating, position)
+                viewModel.onCellRatingChanged(rating, position)
             }
         }
 
     private val surveyWithOptionInteraction =
         object : ReviewCellsAdapter.SurveyWithOptionInteraction {
             override fun onRatingChanged(rating: Int, position: Int) {
-                viewModel.onRatingChanged(rating, position)
+                viewModel.onCellRatingChanged(rating, position)
             }
 
             override fun onAltOptionClicked(position: Int) {
@@ -129,7 +162,7 @@ class ReviewSubmitFragment : Fragment() {
 
     private val submitInteraction = object : ReviewCellsAdapter.SubmitInteraction {
         override fun onSubmitButtonClicked(v: View) {
-            if (v.background is TransitionDrawable){
+            if (v.background is TransitionDrawable) {
                 val background = v.background as TransitionDrawable
                 background.startTransition(100)
                 background.reverseTransition(100)

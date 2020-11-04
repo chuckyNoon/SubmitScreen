@@ -2,82 +2,99 @@ package com.example.rateactivity
 
 object ReviewModelBuilder {
 
-    fun build(cellStates: ArrayList<CellState>): ReviewModel {
-        val review = ReviewModel()
-        for (cellState in cellStates) {
-            when (cellState) {
-                is CellState.SurveyWithStarIcons -> fillReviewWithDataFromSurveyWithStarIcons(
-                    review,
-                    cellState
-                )
-                is CellState.SurveyWithPersonIcons -> fillReviewWithDataFromSurveyWithPersonIcons(
-                    review,
-                    cellState
-                )
-                is CellState.SurveyWithOption -> fillReviewWithDataFromSurveyWithOption(
-                    review,
-                    cellState
-                )
-                is CellState.Feedback -> fillReviewWithDataFromFeedback(
-                    review,
-                    cellState
-                )
-            }
+    private const val DEFAULT_AIRCRAFT_RATING = 1
+    private const val DEFAULT_CREW_RATING = 1
+    private const val DEFAULT_SEAT_RATING = 1
+    private const val DEFAULT_PEOPLE_RATING = 1
+    private const val DEFAULT_FOOD_RATING = 1
+    private const val DEFAULT_FEEDBACK_TEXT = ""
+
+    fun build(headerState: HeaderState, cellStates: ArrayList<CellState>): ReviewModel {
+        var aircraft = DEFAULT_AIRCRAFT_RATING
+        var crew = DEFAULT_CREW_RATING
+        var seat = DEFAULT_SEAT_RATING
+        var people = DEFAULT_PEOPLE_RATING
+        var food: Int? = DEFAULT_FOOD_RATING
+        var text = DEFAULT_FEEDBACK_TEXT
+        val flight = headerState.rating + 1
+
+        for (state in cellStates) {
+            if (aircraft == DEFAULT_AIRCRAFT_RATING) aircraft = tryGetAircraftRating(state)
+            if (crew == DEFAULT_CREW_RATING) crew = tryGetCrewRating(state)
+            if (seat == DEFAULT_SEAT_RATING) seat = tryGetSeatRating(state)
+            if (people == DEFAULT_PEOPLE_RATING) people = tryGetPeopleRating(state)
+            if (food == DEFAULT_FOOD_RATING) food = tryGetFoodRating(state)
+            if (text == DEFAULT_FEEDBACK_TEXT) text = tryGetFeedbackText(state)
         }
-        return review
+        return ReviewModel(text, food, flight, crew, aircraft, seat, people)
     }
 
-    private fun fillReviewWithDataFromSurveyWithStarIcons(
-        reviewModel: ReviewModel,
-        state: CellState.SurveyWithStarIcons
-    ) {
-        when (state.id) {
-            ReviewListBuilder.CellId.Aircraft -> reviewModel.aircraft = state.rating + 1
-            ReviewListBuilder.CellId.Crew -> reviewModel.crew = state.rating + 1
-            ReviewListBuilder.CellId.Seat -> reviewModel.seat = state.rating + 1
+    private fun tryGetAircraftRating(state: CellState): Int {
+        if (state is CellState.SurveyWithStarIcons &&
+            state.id == CellStatesSource.CellId.Aircraft
+        ) {
+            return state.rating + 1
         }
+        return DEFAULT_AIRCRAFT_RATING
     }
 
-    private fun fillReviewWithDataFromSurveyWithPersonIcons(
-        reviewModel: ReviewModel,
-        state: CellState.SurveyWithPersonIcons
-    ) {
-        when (state.id) {
-            ReviewListBuilder.CellId.People -> reviewModel.people = state.rating + 1
+    private fun tryGetCrewRating(state: CellState): Int {
+        if (state is CellState.SurveyWithStarIcons &&
+            state.id == CellStatesSource.CellId.Crew
+        ) {
+            return state.rating + 1
         }
+        return DEFAULT_CREW_RATING
     }
 
-    private fun fillReviewWithDataFromSurveyWithOption(
-        reviewModel: ReviewModel,
-        state: CellState.SurveyWithOption
-    ) {
-        when (state.id) {
-            ReviewListBuilder.CellId.Food -> {
-                if (state.altOptionSelected) {
-                    reviewModel.food = 0
-                } else {
-                    reviewModel.food = state.rating + 1
-                }
-            }
+    private fun tryGetSeatRating(state: CellState): Int {
+        if (state is CellState.SurveyWithStarIcons &&
+            state.id == CellStatesSource.CellId.Seat
+        ) {
+            return state.rating + 1
         }
+        return DEFAULT_SEAT_RATING
     }
 
-    private fun fillReviewWithDataFromFeedback(
-        reviewModel: ReviewModel,
-        state: CellState.Feedback
-    ) {
-        when (state.id) {
-            ReviewListBuilder.CellId.Feedback -> reviewModel.text = state.feedbackText
+    private fun tryGetPeopleRating(state: CellState): Int {
+        if (state is CellState.SurveyWithPersonIcons &&
+            state.id == CellStatesSource.CellId.People
+        ) {
+            return state.rating + 1
         }
+        return DEFAULT_PEOPLE_RATING
     }
+
+    private fun tryGetFoodRating(state: CellState): Int? {
+        if (state !is CellState.SurveyWithOption ||
+            state.id != CellStatesSource.CellId.Food
+        ) {
+            return DEFAULT_FOOD_RATING
+        }
+        return if (state.altOptionSelected) {
+            0
+        } else
+            (state.rating + 1)
+    }
+
+
+    private fun tryGetFeedbackText(state: CellState): String {
+        if (state is CellState.Feedback &&
+            state.id == CellStatesSource.CellId.Feedback
+        ) {
+            return state.feedbackText
+        }
+        return DEFAULT_FEEDBACK_TEXT
+    }
+
 }
 
 data class ReviewModel(
-    var text: String = "",
-    var food: Int = 1,
-    var flight: Int = 1,
-    var crew: Int = 1,
-    var aircraft: Int = 1,
-    var seat: Int = 1,
-    var people: Int = 1
+    val text: String,
+    val food: Int?,
+    val flight: Int,
+    val crew: Int,
+    val aircraft: Int,
+    val seat: Int,
+    val people: Int
 )

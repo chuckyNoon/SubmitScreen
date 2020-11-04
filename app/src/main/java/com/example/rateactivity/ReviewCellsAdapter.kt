@@ -143,7 +143,7 @@ class ReviewCellsAdapter(
         }
     }
 
-    class SurveyWithPersonIconsHolder(private val v: View) :
+    class SurveyWithPersonIconsHolder(v: View) :
         ViewHolder(v) {
 
         private var questionTextView: TextView = v.findViewById(R.id.questionTextView)

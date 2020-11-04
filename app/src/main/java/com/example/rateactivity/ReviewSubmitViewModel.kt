@@ -1,34 +1,58 @@
 package com.example.rateactivity
 
-import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 
-class ReviewSubmitViewModelFactory(private val application: Application) :
+class ReviewSubmitViewModelFactory(
+    private val headerStateSource: HeaderStateSource,
+    private val cellStatesSource: CellStatesSource
+) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return ReviewSubmitViewModel(application) as T
+        return ReviewSubmitViewModel(headerStateSource, cellStatesSource) as T
     }
 }
 
+
 class ReviewSubmitViewModel() : ViewModel() {
 
-    private var cellStates = ArrayList<CellState>()
+    private lateinit var headerStateSource: HeaderStateSource
+    private lateinit var cellStatesSource: CellStatesSource
 
+    private lateinit var headerState: HeaderState
+    private lateinit var cellStates: ArrayList<CellState>
+
+    private val _headerViewState = MutableLiveData<HeaderViewState>()
     private val _cells = MutableLiveData<ArrayList<ReviewCell>>()
+
+    val headerViewState: LiveData<HeaderViewState> = _headerViewState
     val cells: LiveData<ArrayList<ReviewCell>> = _cells
 
-    constructor(app: Application) : this() {
-        cellStates = ReviewListBuilder.build(app.resources)
+    constructor(
+        headerStateSource: HeaderStateSource,
+        cellStatesSource: CellStatesSource
+    ) : this() {
+        this.headerStateSource = headerStateSource
+        this.cellStatesSource = cellStatesSource
+
+        cellStates = cellStatesSource.getStates()
+        headerState = headerStateSource.getState()
+
         createCellsFromStates()
+        createHeaderFromState()
     }
 
-    fun getReport() = ReviewModelBuilder.build(cellStates).toReport()
+    fun getReport() = ReviewModelBuilder.build(headerState, cellStates).toReport()
 
-    fun onRatingChanged(rating: Int, position: Int) {
+    fun onHeaderRatingChanged(rating: Int) {
+        headerState.rating = rating
+        createHeaderFromState()
+    }
+
+    fun onCellRatingChanged(rating: Int, position: Int) {
         when (val state = cellStates[position]) {
             is CellState.SurveyWithStarIcons -> state.rating = rating
             is CellState.SurveyWithPersonIcons -> state.rating = rating
@@ -62,55 +86,34 @@ class ReviewSubmitViewModel() : ViewModel() {
         _cells.value = newCells
     }
 
+    private fun createHeaderFromState() {
+        _headerViewState.value = headerState.toViewState()
+    }
+
     private fun ReviewModel.toReport() = StringBuilder().apply {
-        append(makeReportLine("text", text))
-        append(makeReportLine("food", food.toString()))
         append(makeReportLine("flight", flight.toString()))
-        append(makeReportLine("crew", crew.toString()))
+        append(makeReportLine("people", people.toString()))
         append(makeReportLine("aircraft", aircraft.toString()))
         append(makeReportLine("seat", seat.toString()))
-        append(makeReportLine("people", people.toString()))
+        append(makeReportLine("crew", crew.toString()))
+        append(makeReportLine("food", food.toString()))
+        append(makeReportLine("text", text))
     }.toString()
 
     private fun makeReportLine(fieldName: String, value: String): String {
         return ("$fieldName = $value\n")
     }
+
+    private fun HeaderState.toViewState(): HeaderViewState =
+        HeaderViewState(title, secondLine, thirdLine, rating)
 }
 
-
-sealed class CellState {
-
-    data class SurveyWithStarIcons(
-        var questionText: String,
-        var rating: Int,
-        var id: ReviewListBuilder.CellId
-    ) : CellState()
-
-    class SurveyWithPersonIcons(
-        var questionText: String,
-        var rating: Int,
-        var id: ReviewListBuilder.CellId
-    ) : CellState()
-
-    data class SurveyWithOption(
-        var questionText: String,
-        var rating: Int,
-        var altOptionText: String,
-        var altOptionSelected: Boolean,
-        var id: ReviewListBuilder.CellId
-    ) : CellState()
-
-    data class Feedback(
-        var titleText: String,
-        var feedbackText: String,
-        var id: ReviewListBuilder.CellId
-    ) : CellState()
-
-    data class Submit(
-        var buttonText: String,
-        var id: ReviewListBuilder.CellId
-    ) : CellState()
-}
+data class HeaderViewState(
+    val title: String,
+    val secondLine: String,
+    val thirdLine: String,
+    val rating: Int
+)
 
 fun CellState.toCell(): ReviewCell {
     return when (this) {

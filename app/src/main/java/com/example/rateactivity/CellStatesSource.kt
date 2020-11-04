@@ -1,8 +1,8 @@
 package com.example.rateactivity
 
-import android.content.res.Resources
+import android.app.Application
 
-object ReviewListBuilder {
+class CellStatesSource(private val app: Application) {
 
     enum class CellId {
         Feedback,
@@ -14,8 +14,9 @@ object ReviewListBuilder {
         People
     }
 
-    fun build(res: Resources): ArrayList<CellState> {
+    fun getStates(): ArrayList<CellState> {
         val states = ArrayList<CellState>()
+        val res = app.resources
         states.add(
             CellState.SurveyWithPersonIcons(
                 res.getString(R.string.people_question),
@@ -68,4 +69,38 @@ object ReviewListBuilder {
         )
         return states
     }
+}
+
+sealed class CellState {
+
+    class SurveyWithStarIcons(
+        var questionText: String,
+        var rating: Int,
+        var id: CellStatesSource.CellId
+    ) : CellState()
+
+    class SurveyWithPersonIcons(
+        var questionText: String,
+        var rating: Int,
+        var id: CellStatesSource.CellId
+    ) : CellState()
+
+    class SurveyWithOption(
+        var questionText: String,
+        var rating: Int,
+        var altOptionText: String,
+        var altOptionSelected: Boolean,
+        var id: CellStatesSource.CellId
+    ) : CellState()
+
+    class Feedback(
+        var titleText: String,
+        var feedbackText: String,
+        var id: CellStatesSource.CellId
+    ) : CellState()
+
+    class Submit(
+        var buttonText: String,
+        var id: CellStatesSource.CellId
+    ) : CellState()
 }
