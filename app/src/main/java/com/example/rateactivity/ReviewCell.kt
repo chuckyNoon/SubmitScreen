@@ -43,6 +43,7 @@ sealed class ReviewCell {
         }
     }
 
+
     data class SurveyWithPersonIcons(
         val question: String,
         val rating: Int,
