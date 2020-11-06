@@ -71,7 +71,7 @@ object ReviewModelBuilder {
         ) {
             return DEFAULT_FOOD_RATING
         }
-        return if (state.altOptionSelected) {
+        return if (state.isAltOptionSelected) {
             0
         } else
             (state.rating + 1)

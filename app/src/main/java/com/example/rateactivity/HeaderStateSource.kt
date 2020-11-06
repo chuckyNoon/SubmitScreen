@@ -9,7 +9,8 @@ class HeaderStateSource(private val app: Application) {
             res.getString(R.string.header_title),
             res.getString(R.string.header_second_line),
             res.getString(R.string.header_third_line),
-            0
+            0,
+            true
         )
     }
 }
@@ -18,5 +19,6 @@ class HeaderState(
     var title: String,
     var secondLine: String,
     var thirdLine: String,
-    var rating: Int
+    var rating: Int,
+    var isClickable: Boolean
 )

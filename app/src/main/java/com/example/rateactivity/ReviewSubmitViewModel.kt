@@ -1,9 +1,10 @@
 package com.example.rateactivity
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class ReviewSubmitViewModelFactory(
@@ -16,36 +17,50 @@ class ReviewSubmitViewModelFactory(
     }
 }
 
+class ReviewSubmitViewModel(
+    private val headerStateSource: HeaderStateSource,
+    private val cellStatesSource: CellStatesSource
+) : ViewModel() {
 
-class ReviewSubmitViewModel() : ViewModel() {
-
-    private lateinit var headerStateSource: HeaderStateSource
-    private lateinit var cellStatesSource: CellStatesSource
-
-    private lateinit var headerState: HeaderState
-    private lateinit var cellStates: ArrayList<CellState>
+    private var headerState: HeaderState = headerStateSource.getState()
+    private var cellStates: ArrayList<CellState> = cellStatesSource.getStates()
 
     private val _headerViewState = MutableLiveData<HeaderViewState>()
     private val _cells = MutableLiveData<ArrayList<ReviewCell>>()
+    private val _motionLayoutProgress = MutableLiveData(0f)
+    private val _isProgressBarVisible = MutableLiveData(false)
+    private val _toastMessage = MutableLiveData<String?>(null)
 
     val headerViewState: LiveData<HeaderViewState> = _headerViewState
     val cells: LiveData<ArrayList<ReviewCell>> = _cells
+    val motionLayoutProgress: LiveData<Float> = _motionLayoutProgress
+    val isProgressBarVisible: LiveData<Boolean> = _isProgressBarVisible
+    val toast: LiveData<String?> = _toastMessage
 
-    constructor(
-        headerStateSource: HeaderStateSource,
-        cellStatesSource: CellStatesSource
-    ) : this() {
-        this.headerStateSource = headerStateSource
-        this.cellStatesSource = cellStatesSource
-
-        cellStates = cellStatesSource.getStates()
-        headerState = headerStateSource.getState()
-
+    init {
         createCellsFromStates()
         createHeaderFromState()
     }
 
-    fun getReport() = ReviewModelBuilder.build(headerState, cellStates).toReport()
+    fun onStop(motionLayoutProgress: Float?) {
+        motionLayoutProgress?.let {
+            _motionLayoutProgress.value = it
+        }
+    }
+
+    fun onSubmitButtonClicked() {
+        viewModelScope.launch {
+            _isProgressBarVisible.value = true
+            changeViewsClickableState(isClickable = false)
+            withContext(Dispatchers.Default) {
+                delay(9000)
+            }
+            changeViewsClickableState(isClickable = true)
+            _isProgressBarVisible.value = false
+            _toastMessage.value = ReviewModelBuilder.build(headerState, cellStates).toReport()
+            _toastMessage.value = null
+        }
+    }
 
     fun onHeaderRatingChanged(rating: Int) {
         headerState.rating = rating
@@ -65,7 +80,7 @@ class ReviewSubmitViewModel() : ViewModel() {
     fun onAltOptionButtonClicked(position: Int) {
         val state = cellStates[position]
         if (state is CellState.SurveyWithOption) {
-            state.altOptionSelected = !state.altOptionSelected
+            state.isAltOptionSelected = !state.isAltOptionSelected
             createCellsFromStates()
         }
     }
@@ -76,6 +91,21 @@ class ReviewSubmitViewModel() : ViewModel() {
             state.feedbackText = text
             createCellsFromStates()
         }
+    }
+
+    private fun changeViewsClickableState(isClickable:Boolean) {
+        for (cellState in cellStates) {
+            when (cellState) {
+                is CellState.SurveyWithStarIcons -> cellState.isContentClickable = isClickable
+                is CellState.SurveyWithPersonIcons -> cellState.isContentClickable = isClickable
+                is CellState.SurveyWithOption -> cellState.isContentClickable = isClickable
+                is CellState.Feedback -> cellState.isContentClickable = isClickable
+                is CellState.Submit -> cellState.isContentClickable = isClickable
+            }
+        }
+        headerState.isClickable = isClickable
+        createCellsFromStates()
+        createHeaderFromState()
     }
 
     private fun createCellsFromStates() {
@@ -105,14 +135,15 @@ class ReviewSubmitViewModel() : ViewModel() {
     }
 
     private fun HeaderState.toViewState(): HeaderViewState =
-        HeaderViewState(title, secondLine, thirdLine, rating)
+        HeaderViewState(title, secondLine, thirdLine, rating, isClickable)
 }
 
 data class HeaderViewState(
     val title: String,
     val secondLine: String,
     val thirdLine: String,
-    val rating: Int
+    val rating: Int,
+    val isClickable: Boolean
 )
 
 fun CellState.toCell(): ReviewCell {
@@ -120,27 +151,32 @@ fun CellState.toCell(): ReviewCell {
         is CellState.SurveyWithStarIcons -> ReviewCell.SurveyWithStarIcons(
             questionText,
             rating,
+            isContentClickable,
             id
         )
         is CellState.SurveyWithPersonIcons -> ReviewCell.SurveyWithPersonIcons(
             questionText,
             rating,
+            isContentClickable,
             id
         )
         is CellState.SurveyWithOption -> ReviewCell.SurveyWithAltOption(
             questionText,
             rating,
             altOptionText,
-            altOptionSelected,
+            isAltOptionSelected,
+            isContentClickable,
             id
         )
         is CellState.Feedback -> ReviewCell.Feedback(
             titleText,
             feedbackText,
+            isContentClickable,
             id
         )
         is CellState.Submit -> ReviewCell.Submit(
             buttonText,
+            isContentClickable,
             id
         )
     }

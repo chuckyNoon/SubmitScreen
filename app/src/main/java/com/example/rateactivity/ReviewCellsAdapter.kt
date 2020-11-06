@@ -9,10 +9,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_survey_with_person_icons.view.*
 import kotlinx.android.synthetic.main.item_survey_with_alternative_option.view.*
-import kotlinx.android.synthetic.main.item_feedback.view.*
-import kotlinx.android.synthetic.main.item_submit.view.*
 
 class ReviewCellsAdapter(
     private val layoutInflater: LayoutInflater,
@@ -63,8 +60,7 @@ class ReviewCellsAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
         super.onBindViewHolder(holder, position, payloads)
 
-        if (payloads.size < 1)
-            return
+        if (payloads.size < 1) return
         when (val newData = payloads[0]) {
             is ReviewCell.SurveyWithStarIcons -> holder.bind(newData)
             is ReviewCell.SurveyWithAltOption -> holder.bind(newData)
@@ -121,6 +117,12 @@ class ReviewCellsAdapter(
         private var ratingBar: RatingBar = v.findViewById(R.id.ratingBar)
         private var interaction: SurveyWithStarIconsInteraction? = null
 
+        init {
+            ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
+                interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+            }
+        }
+
         constructor(
             layoutInflater: LayoutInflater,
             parent: ViewGroup,
@@ -134,10 +136,10 @@ class ReviewCellsAdapter(
         override fun bind(cell: ReviewCell) {
             if (cell is ReviewCell.SurveyWithStarIcons) {
                 questionTextView.text = cell.question
-                ratingBar.numStars = 5
-                ratingBar.rating = cell.rating.toFloat()
-                ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
-                    interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+                ratingBar.apply {
+                    numStars = 5
+                    rating = cell.rating.toFloat()
+                    setIsIndicator(!cell.isContentClickable)
                 }
             }
         }
@@ -149,6 +151,12 @@ class ReviewCellsAdapter(
         private var questionTextView: TextView = v.findViewById(R.id.questionTextView)
         private var ratingBar: RatingBar = v.findViewById(R.id.ratingBar)
         private var interaction: SurveyWithPersonIconsInteraction? = null
+
+        init {
+            ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
+                interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+            }
+        }
 
         constructor(
             layoutInflater: LayoutInflater,
@@ -163,10 +171,10 @@ class ReviewCellsAdapter(
         override fun bind(cell: ReviewCell) {
             if (cell is ReviewCell.SurveyWithPersonIcons) {
                 questionTextView.text = cell.question
-                ratingBar.numStars = 5
-                ratingBar.rating = cell.rating.toFloat()
-                ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
-                    interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+                ratingBar.apply {
+                    numStars = 5
+                    rating = cell.rating.toFloat()
+                    setIsIndicator(!cell.isContentClickable)
                 }
             }
         }
@@ -179,6 +187,15 @@ class ReviewCellsAdapter(
         private var questionTextView: TextView = v.findViewById(R.id.questionTextView)
         private var ratingBar: RatingBar = v.findViewById(R.id.ratingBar)
         private var radioButton: RadioButton = v.radioButton
+
+        init {
+            ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
+                interaction?.onRatingChanged(rating.toInt(), adapterPosition)
+            }
+            radioButton.setOnClickListener {
+                interaction?.onAltOptionClicked(adapterPosition)
+            }
+        }
 
         constructor(
             layoutInflater: LayoutInflater,
@@ -199,22 +216,17 @@ class ReviewCellsAdapter(
         override fun bind(cell: ReviewCell) {
             if (cell is ReviewCell.SurveyWithAltOption) {
                 questionTextView.text = cell.question
+                radioButton.text = cell.altOptionText
+                radioButton.isClickable = cell.isContentClickable
                 ratingBar.numStars = 5
-                if (cell.altOptionSelected) {
+                if (cell.isAltOptionSelected) {
                     ratingBar.rating = 0f
                     ratingBar.setIsIndicator(true)
                     radioButton.isChecked = true
                 } else {
                     ratingBar.rating = cell.rating.toFloat()
-                    ratingBar.setIsIndicator(false)
+                    ratingBar.setIsIndicator(!cell.isContentClickable)
                     radioButton.isChecked = false
-                }
-                radioButton.text = cell.altOptionText
-                ratingBar.setOnRatingBarChangeListener { ratingBar, rating, fromUser ->
-                    interaction?.onRatingChanged(rating.toInt(), adapterPosition)
-                }
-                radioButton.setOnClickListener {
-                    interaction?.onAltOptionClicked(adapterPosition)
                 }
             }
         }
@@ -226,6 +238,15 @@ class ReviewCellsAdapter(
         private var interaction: FeedbackInteraction? = null
         private var feedbackTitleTextView: TextView = v.findViewById(R.id.feedbackTitleTextView)
         private var feedbackEditText: EditText = v.findViewById(R.id.feedbackEditText)
+
+        init {
+            feedbackEditText.addTextChangedListener { editable ->
+                editable?.let {
+                    interaction?.onTextChanged(it.toString(), adapterPosition)
+                }
+            }
+            feedbackEditText.imeOptions = EditorInfo.IME_ACTION_DONE
+        }
 
         constructor(
             layoutInflater: LayoutInflater,
@@ -239,16 +260,13 @@ class ReviewCellsAdapter(
 
         override fun bind(cell: ReviewCell) {
             if (cell is ReviewCell.Feedback) {
-                feedbackTitleTextView.text = cell.titleText
-                feedbackEditText.imeOptions = EditorInfo.IME_ACTION_DONE
-                if (feedbackEditText.text.toString() != cell.feedbackText) {
-                    feedbackEditText.setText(cell.feedbackText)
-                }
-                feedbackEditText.addTextChangedListener { editable ->
-                    editable?.let {
-                        interaction?.onTextChanged(it.toString(), adapterPosition)
+                feedbackEditText.apply {
+                    isEnabled = cell.isContentClickable
+                    if (text.toString() != cell.feedbackText) {
+                        setText(cell.feedbackText)
                     }
                 }
+                feedbackTitleTextView.text = cell.titleText
             }
         }
     }
@@ -258,6 +276,12 @@ class ReviewCellsAdapter(
 
         private var interaction: SubmitInteraction? = null
         private val submitButton: Button = v.findViewById(R.id.submitButton)
+
+        init {
+            submitButton.setOnClickListener {
+                interaction?.onSubmitButtonClicked(it)
+            }
+        }
 
         constructor(
             layoutInflater: LayoutInflater,
@@ -272,9 +296,7 @@ class ReviewCellsAdapter(
         override fun bind(cell: ReviewCell) {
             if (cell is ReviewCell.Submit) {
                 submitButton.text = cell.buttonText
-                submitButton.setOnClickListener {
-                    interaction?.onSubmitButtonClicked(it)
-                }
+                submitButton.isClickable = cell.isContentClickable
             }
         }
     }

@@ -21,6 +21,7 @@ class CellStatesSource(private val app: Application) {
             CellState.SurveyWithPersonIcons(
                 res.getString(R.string.people_question),
                 0,
+                true,
                 CellId.People
             )
         )
@@ -28,6 +29,7 @@ class CellStatesSource(private val app: Application) {
             CellState.SurveyWithStarIcons(
                 res.getString(R.string.aircraft_question),
                 0,
+                true,
                 CellId.Aircraft
             )
         )
@@ -35,6 +37,7 @@ class CellStatesSource(private val app: Application) {
             CellState.SurveyWithStarIcons(
                 res.getString(R.string.seats_question),
                 0,
+                true,
                 CellId.Seat
             )
         )
@@ -42,6 +45,7 @@ class CellStatesSource(private val app: Application) {
             CellState.SurveyWithStarIcons(
                 res.getString(R.string.crew_question),
                 0,
+                true,
                 CellId.Crew
             )
         )
@@ -50,7 +54,8 @@ class CellStatesSource(private val app: Application) {
                 res.getString(R.string.food_question),
                 0,
                 res.getString(R.string.no_food_answer),
-                false,
+                isAltOptionSelected = false,
+                isContentClickable = true,
                 CellId.Food
             )
         )
@@ -58,12 +63,14 @@ class CellStatesSource(private val app: Application) {
             CellState.Feedback(
                 res.getString(R.string.feedback_title),
                 "",
+                true,
                 CellId.Feedback
             )
         )
         states.add(
             CellState.Submit(
                 res.getString(R.string.submit_button_text),
+                true,
                 CellId.Submit
             )
         )
@@ -76,12 +83,14 @@ sealed class CellState {
     class SurveyWithStarIcons(
         var questionText: String,
         var rating: Int,
+        var isContentClickable: Boolean,
         var id: CellStatesSource.CellId
     ) : CellState()
 
     class SurveyWithPersonIcons(
         var questionText: String,
         var rating: Int,
+        var isContentClickable: Boolean,
         var id: CellStatesSource.CellId
     ) : CellState()
 
@@ -89,18 +98,21 @@ sealed class CellState {
         var questionText: String,
         var rating: Int,
         var altOptionText: String,
-        var altOptionSelected: Boolean,
+        var isAltOptionSelected: Boolean,
+        var isContentClickable: Boolean,
         var id: CellStatesSource.CellId
     ) : CellState()
 
     class Feedback(
         var titleText: String,
         var feedbackText: String,
+        var isContentClickable: Boolean,
         var id: CellStatesSource.CellId
     ) : CellState()
 
     class Submit(
         var buttonText: String,
+        var isContentClickable: Boolean,
         var id: CellStatesSource.CellId
     ) : CellState()
 }
