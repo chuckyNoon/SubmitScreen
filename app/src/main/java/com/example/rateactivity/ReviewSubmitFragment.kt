@@ -33,7 +33,6 @@ class ReviewSubmitFragment : Fragment() {
     private var headerSecondLineView: TextView? = null
     private var headerThirdLineView: TextView? = null
     private var headerRatingBar: RatingBar? = null
-    private var reportToast: Toast? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +75,7 @@ class ReviewSubmitFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
 
-        progressBar = null
+        motionLayout = null
         toolbar = null
         recyclerView = null
         progressBar = null
@@ -84,7 +83,6 @@ class ReviewSubmitFragment : Fragment() {
         headerSecondLineView = null
         headerThirdLineView = null
         headerRatingBar = null
-        reportToast = null
     }
 
     private fun initFields(v: View) {
